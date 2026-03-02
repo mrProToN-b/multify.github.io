@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multiplication Master</title>
+<style>
+  /* Define CSS Variables for Light Mode (Default) */
+  :root {
+    --bg-color: #e9ecef;
+    --container-bg: #ffffff;
+    --text-color: #333333;
+    --sub-text-color: #666666;
+    --input-bg: #ffffff;
+    --input-border: #cccccc;
+    --input-text: #000000;
+    --option-bg: #f8f9fa;
+    --option-text: #333333;
+    --option-border: #007bff;
+    --option-hover-bg: #007bff;
+    --option-hover-text: #ffffff;
+    --question-color: #222222;
+  }
+
+  /* Define CSS Variables for Dark Mode (Apple System Gray Palette) */
+  body.dark-mode {
+    --bg-color: #1c1c1e;
+    --container-bg: #2c2c2e;
+    --text-color: #f2f2f7;
+    --sub-text-color: #aeaeb2;
+    --input-bg: #3a3a3c;
+    --input-border: #48484a;
+    --input-text: #ffffff;
+    --option-bg: #3a3a3c;
+    --option-text: #f2f2f7;
+    --option-border: #0a84ff;
+    --option-hover-bg: #0a84ff;
+    --option-hover-text: #ffffff;
+    --question-color: #ffffff;
+  }
+
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    transition: background-color 0.3s, color 0.3s;
+  }
+
+  /* Theme Toggle Button */
+  #theme-toggle {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background-color: var(--container-bg);
+    color: var(--text-color);
+    border: 1px solid var(--input-border);
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    width: auto;
+  }
+  #theme-toggle:hover {
+    filter: brightness(0.9);
+  }
+
+  .game-container {
+    background-color: var(--container-bg);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    transition: background-color 0.3s;
+  }
+  h2 { margin-top: 0; }
+  .hidden { display: none; }
+  
+  /* Input Styling */
+  .setup-row { margin: 15px 0; }
+  input[type="number"] {
+    padding: 8px;
+    width: 60px;
+    background-color: var(--input-bg);
+    color: var(--input-text);
+    border: 1px solid var(--input-border);
+    border-radius: 4px;
+    font-size: 16px;
+    text-align: center;
+    transition: all 0.3s;
+  }
+  
+  /* Button Styling */
+  button {
+    background-color: #34c759; /* Apple Green */
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    font-size: 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 10px;
+    width: 100%;
+    font-weight: bold;
+  }
+  button:hover { background-color: #2eb050; }
+  .end-btn { background-color: #ff3b30; /* Apple Red */ }
+  .end-btn:hover { background-color: #e0352b; }
+  
+  /* Game Area Styling */
+  #score-board {
+    font-size: 18px;
+    font-weight: bold;
+    color: #0a84ff;
+    margin-bottom: 20px;
+  }
+  #question {
+    font-size: 36px;
+    font-weight: bold;
+    margin: 20px 0;
+    color: var(--question-color);
+  }
+  .options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .option-btn {
+    background-color: var(--option-bg);
+    color: var(--option-text);
+    border: 2px solid var(--option-border);
+    margin: 0;
+    transition: all 0.2s;
+  }
+  .option-btn:hover {
+    background-color: var(--option-hover-bg);
+    color: var(--option-hover-text);
+  }
+  
+  /* Feedback Animation */
+  .correct { background-color: #34c759 !important; color: white !important; border-color: #34c759 !important;}
+  .wrong { background-color: #ff3b30 !important; color: white !important; border-color: #ff3b30 !important;}
+  .info-text { font-size: 14px; color: var(--sub-text-color); }
+</style>
+</head>
+<body>
+
+<button id="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+
+<div class="game-container">
+  <h2>Multiplication Master</h2>
+
+  <div id="setup-screen">
+    <p>Select your table range (e.g., 1 to 20):</p>
+    <div class="setup-row">
+      <label>From Table: <input type="number" id="min-table" value="1" min="1" max="20"></label>
+    </div>
+    <div class="setup-row">
+      <label>To Table: <input type="number" id="max-table" value="20" min="1" max="20"></label>
+    </div>
+    <p class="info-text">*To practice just one number, set both to the same number (e.g., 7 to 7).</p>
+    <button onclick="startGame()">Start Playing</button>
+  </div>
+
+  <div id="game-screen" class="hidden">
+    <div id="score-board">Score: <span id="score">0</span></div>
+    <div id="question">? x ? =</div>
+    
+    <div class="options-grid">
+      <button class="option-btn" onclick="checkAnswer(this)"></button>
+      <button class="option-btn" onclick="checkAnswer(this)"></button>
+      <button class="option-btn" onclick="checkAnswer(this)"></button>
+      <button class="option-btn" onclick="checkAnswer(this)"></button>
+    </div>
+    
+    <button class="end-btn" onclick="endGame()">End Game & Change Range</button>
+  </div>
+</div>
+
+<script>
+  let score = 0;
+  let correctAnswer = 0;
+  let isWaiting = false;
+
+  // --- Theme Toggle Logic ---
+  function toggleTheme() {
+    const body = document.body;
+    const themeBtn = document.getElementById('theme-toggle');
+    
+    body.classList.toggle('dark-mode');
+    
+    if (body.classList.contains('dark-mode')) {
+      themeBtn.innerText = '☀️ Light Mode';
+    } else {
+      themeBtn.innerText = '🌙 Dark Mode';
+    }
+  }
+
+  // --- Game Logic ---
+  function startGame() {
+    score = 0;
+    updateScoreDisplay();
+    document.getElementById('setup-screen').classList.add('hidden');
+    document.getElementById('game-screen').classList.remove('hidden');
+    generateQuestion();
+  }
+
+  function generateQuestion() {
+    isWaiting = false;
+    let minT = parseInt(document.getElementById('min-table').value) || 1;
+    let maxT = parseInt(document.getElementById('max-table').value) || 20;
+
+    const actualMin = Math.min(minT, maxT);
+    const actualMax = Math.max(minT, maxT);
+
+    const num1 = Math.floor(Math.random() * (actualMax - actualMin + 1)) + actualMin;
+    const num2 = Math.floor(Math.random() * 10) + 1; 
+
+    correctAnswer = num1 * num2;
+    document.getElementById('question').innerText = `${num1} × ${num2} = ?`;
+
+    let answers = [correctAnswer];
+    while (answers.length < 4) {
+      let offset = Math.floor(Math.random() * 5) + 1;
+      let wrongAnswer = Math.random() > 0.5 ? correctAnswer + offset : correctAnswer - offset;
+      
+      if (wrongAnswer > 0 && !answers.includes(wrongAnswer)) {
+        answers.push(wrongAnswer);
+      }
+    }
+
+    answers.sort(() => Math.random() - 0.5);
+
+    const buttons = document.querySelectorAll('.option-btn');
+    buttons.forEach((btn, index) => {
+      btn.innerText = answers[index];
+      btn.value = answers[index];
+      btn.classList.remove('correct', 'wrong');
+    });
+  }
+
+  function checkAnswer(btn) {
+    if (isWaiting) return; 
+    isWaiting = true;
+
+    const selectedAnswer = parseInt(btn.value);
+
+    if (selectedAnswer === correctAnswer) {
+      score += 10;
+      btn.classList.add('correct');
+    } else {
+      score = Math.max(0, score - 5); 
+      btn.classList.add('wrong');
+      
+      document.querySelectorAll('.option-btn').forEach(b => {
+        if (parseInt(b.value) === correctAnswer) {
+          b.classList.add('correct');
+        }
+      });
+    }
+    
+    updateScoreDisplay();
+    setTimeout(generateQuestion, 800);
+  }
+
+  function updateScoreDisplay() {
+    document.getElementById('score').innerText = score;
+  }
+
+  function endGame() {
+    document.getElementById('setup-screen').classList.remove('hidden');
+    document.getElementById('game-screen').classList.add('hidden');
+  }
+</script>
+
+</body>
+  </html>
